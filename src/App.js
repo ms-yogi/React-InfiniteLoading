@@ -7,18 +7,15 @@ const App = () => {
 	const [loading, setLoading] = useState(true);
 	const [allUsers, setAllUsers] = useState([]);
 	const [pageNum, setPageNum] = useState(1);
-	const [element, setElement] = useState(null);
+	const [lastElement, setLastElement] = useState(null);
 
 	const observer = useRef(
-		new IntersectionObserver(
-			(entries) => {
-				const first = entries[0];
-				if (first.isIntersecting) {
-					setPageNum((no) => no + 1);
-				}
-			},
-			{ threshold: 1 }
-		)
+		new IntersectionObserver((entries) => {
+			const first = entries[0];
+			if (first.isIntersecting) {
+				setPageNum((no) => no + 1);
+			}
+		})
 	);
 
 	const callUser = async () => {
@@ -38,7 +35,7 @@ const App = () => {
 	}, [pageNum]);
 
 	useEffect(() => {
-		const currentElement = element;
+		const currentElement = lastElement;
 		const currentObserver = observer.current;
 
 		if (currentElement) {
@@ -50,7 +47,7 @@ const App = () => {
 				currentObserver.unobserve(currentElement);
 			}
 		};
-	}, [element]);
+	}, [lastElement]);
 
 	const UserCard = ({ data }) => {
 		return (
@@ -80,27 +77,21 @@ const App = () => {
 
 	return (
 		<div className='mx-44 bg-gray-100 p-6'>
-			{console.log(pageNum)}
 			<h1 className='text-3xl text-center mt-4 mb-10'>All users</h1>
 
 			<div className='grid grid-cols-3 gap-4'>
 				{allUsers.length > 0 &&
 					allUsers.map((user, i) => {
-						if (
-							i === allUsers.length - 1 &&
+						return i === allUsers.length - 1 &&
 							!loading &&
-							pageNum <= TOTAL_PAGES
-						) {
-							return (
-								<div
-									key={`${user.name.first}-${i}`}
-									ref={setElement}
-								>
-									<UserCard data={user} />
-								</div>
-							);
-						}
-						return (
+							pageNum <= TOTAL_PAGES ? (
+							<div
+								key={`${user.name.first}-${i}`}
+								ref={setLastElement}
+							>
+								<UserCard data={user} />
+							</div>
+						) : (
 							<UserCard
 								data={user}
 								key={`${user.name.first}-${i}`}
